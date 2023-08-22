@@ -1,0 +1,100 @@
+###########
+####  app.py  #########
+from flask import Flask,jsonify, request, session
+##bcrypt == password algorithm
+## pip install bcrypt
+from flask_bcrypt import Bcrypt
+from flask_cors import CORS, cross_origin #used for post request 
+from modules import db,User
+
+app= Flask(__name__)
+
+app = Flask(__name__)
+app.secret_key = 'mathi-mysql'
+
+
+app.config['SECRECT_KEY'] ='mathi-mysql'
+app.config['SQLALCHEMY_DATABASE_URI']='sqlite:///flaskdb.db'
+SQLALCHEMY_TRACK_MODIFICATION = False
+SQLALCHEMY_ECHO = True
+
+bcrypt = Bcrypt(app) ## initalize the application with bcrypt
+CORS(app, supports_credential= True)
+db.init_app(app)
+
+with app.app_context():
+    db.create_all()
+
+@app.route('/')
+def home():
+    return "<p> welcome to python world</>"
+
+@app.route('/signup', methods=["post"])
+def signup():
+    email = request.json["email"]
+    password= request.json["password"]
+    username=request.json['username']
+    mobile=request.json['mobile']
+
+    user_exists = User.query.filter_by(email = email).first()is not None
+    if (user_exists):
+        return jsonify({"error":"email is already exist"}), 409
+
+    hashed_password= bcrypt.generate_password_hash(password)
+    new_user=User(email=email, password=hashed_password, username=username, mobile=mobile)
+    db.session.add(new_user)
+    db.session.commit()
+
+    session["user_id"]= new_user.id
+    return jsonify({
+        'id':new_user.id,
+        "email":new_user.email,
+        "username":new_user.username,
+        "mobile" : new_user.mobile
+    })
+
+@app.route("/login", methods=['post'])
+def login_user():
+    email=request.json['email']
+    password=request.json['password']
+    
+
+    user= User.query.filter_by(email=email).first()
+
+    if user is None:
+        return jsonify({"error":"invalid username credential"}),401
+
+    if not bcrypt.check_password_hash(user.password,password):
+        return jsonify({'message':'Invalid password credentials'}),401
+
+    session["user_id"]= user.id
+    return jsonify({
+        "id":user.id,
+        "email":user.email,
+       
+        })
+
+
+if __name__== '__main__':
+    app.run(debug = True)
+
+
+#####################
+######## modules.py  ############
+from flask_sqlalchemy import SQLAlchemy
+from uuid import uuid4
+
+db= SQLAlchemy()
+
+def get_uuid():
+    return uuid4().hex
+
+class User(db.Model):
+    __tablename__ = 'users'
+    id = db.Column('id', db.String(15), primary_key=True, unique=True, default=get_uuid) #primary key
+    email = db.Column(db.String(150), unique=True, nullable=False) 
+    password= db.Column(db.Text, nullable=False)
+    username= db.Column(db.String(150))
+    mobile = db.Column(db.String(150), unique=True)
+
+    
