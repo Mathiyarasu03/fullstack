@@ -1,0 +1,248 @@
+##########
+###  app.js  #####
+import React,{} from 'react';
+import './App.css';
+// //  npm install react-router-dom
+import {BrowserRouter, Routes, Route} from 'react-router-dom';
+
+// connection of another js file 
+import HomePage from './pages/home';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import NewLogin from './pages/NewLogin';
+
+
+function App(){
+  return(
+    <div className='App'>
+    
+      <BrowserRouter>
+      <Routes>
+        <Route path='/' element={<HomePage />}></Route>
+        <Route path='/login' element={<LoginPage />}></Route>
+        <Route path='/register' element={<RegisterPage />}></Route>
+        <Route path='/newlogin' element={<NewLogin />}></Route>
+        
+      </Routes>
+      </BrowserRouter>
+    </div>
+  )
+}
+
+export default App;
+
+###############
+###### home.js   ########
+import React,{} from "react";
+import {Link} from "react-router-dom";
+
+const HomePage= () =>{
+    return(
+        <>
+        <p><Link to ='/login' >Login</Link><br></br>
+        <Link to='/register'>Register</Link>
+        </p>
+        
+        </>
+    )
+}
+
+export default HomePage;
+
+#####################
+######  loginpage.js   ###########
+import React, { useState } from 'react';
+
+// axios is used for import post method of http of backend
+import axios from 'axios'; 
+//navigate= It helps to go to the specific URL, forward or backward pages.
+import { useNavigate } from "react-router-dom";
+
+
+
+const LoginPage= () =>{
+    const [email, setEmail]= useState('');
+    const [password, setpassword]= useState('');
+    
+    const navigate = useNavigate();
+
+    const logInUser= () =>{
+        if(email.length ===0){
+            alert("Email is blank!!");
+        }
+        else if(password.length ===0){
+            alert("password is blank plse enter the password")
+        }
+        else{
+            // alert("success");
+            axios.post('http://127.0.0.1:5000/login',{
+                email: email,
+                password: password
+            })
+            .then(function(response){
+                console.log(response);
+                navigate("/newlogin");
+            })
+            .catch(function(error){
+                console.log(error,"error");
+                if(error.response.status === 401){
+                    alert("invalid credential plse check it");
+                }
+            });
+
+        }
+    }
+    return(
+        <>welcome to login page
+        <form>
+            <p>Login into your existing account</p>
+        <div>
+            Email
+            <input type='email' value={email} onChange={(e)=>setEmail(e.target.value)} 
+            placeholder="enter the registred email"></input>
+        </div>
+        <div>
+            password
+            <input type='password' value={password} onChange={(e)=> setpassword(e.target.value)}></input>
+        </div>
+        <button type="button" onClick={logInUser}>Login</button>
+        <p>
+            create a new account for registert
+            <a href='/register'>Register</a>
+        </p>
+        </form>
+       
+        </>
+    )
+
+}
+
+export default LoginPage;
+
+########################
+########  registerpage.js  ###########
+import React,{useState} from 'react';
+import axios from 'axios';
+import {useNavigate} from "react-router-dom";
+
+function RegisterPage(){
+    const [email,setEmail] =useState('');
+    const[password, setPassword]= useState('');
+    const[username, setUsername] = useState('');
+    const[mobile, setMobile] = useState('');
+
+    const navigate= useNavigate();
+
+    const registUser=()=>{
+        axios.post('http://127.0.0.1:5000/signup',{
+            email: email,
+            password: password,
+            username: username,
+            mobile:mobile
+        })
+        .then(function(response){
+            console.log(response);
+            navigate("/");
+        })
+        .catch(function(error){
+            console.log(error,'error');
+            if(error.response.status === 401){
+                alert("invalid credentails");
+            }
+        })
+    }
+    return(
+        <>welcome to register page 
+        <form>
+            <div>
+                Email
+                <input type='email' value={email} onChange={(e)=> setEmail(e.target.value)} 
+                placeholder='enter new email id'></input>
+            </div>
+            <div>
+                password
+                <input type='password' value={password} onChange={(e) => setPassword(e.target.value)}
+                placeholder='password'></input>
+            </div>
+            <div>
+                username
+                <input type='username' value={username} onChange={(e)=> setUsername(e.target.value)}
+                placeholder='USERNAME'></input>
+            </div>
+            <div>
+                mobile
+                <input type='mobile' value={mobile} onChange={(e)=> setMobile(e.target.value)}
+                placeholder="mobile number" required></input>
+            </div>
+
+            <button type='button' onClick={registUser}>Sign up</button>
+        </form>
+        
+        </>
+    )
+}export default RegisterPage;
+
+##################
+######## new login page   ############
+// Home.js
+import React from 'react';
+
+
+const NewLogin = () => {
+  
+  return (
+    <form>
+        <div className="home-container">
+      <header className="header">
+        <h1>Welcome to Our Website</h1>
+        <p>Your go-to place for amazing content!</p>
+      </header>
+
+      <main className="main-content">
+        <section className="featured-section">
+          <div className="featured-item">
+            <img
+              src="https://placekitten.com/400/300"
+              alt="Featured Content"
+            />
+            <h2>Featured Content</h2>
+            <p>Discover our latest and greatest offerings.</p>
+            <button className="btn">Learn More</button>
+          </div>
+        </section>
+
+        <section className="info-section">
+          <div className="info-item">
+            <h3>About Us</h3>
+            <p>We are a team of passionate creators...</p>
+            <button className="btn">Read More</button>
+          </div>
+
+          <div className="info-item">
+            <h3>Our Services</h3>
+            <p>Explore our range of services that...</p>
+            <button className="btn">View Services</button>
+          </div>
+        </section>
+      </main>
+
+      <footer className="footer">
+        <p>&copy; 2023 Your Company. All rights reserved.</p>
+      </footer>
+    </div>
+    <button type='button' >Logout</button>
+    
+   
+    </form>
+    
+  );
+};
+
+  export default NewLogin;
+
+
+//   export default NewLogin;
+
+
+
+
