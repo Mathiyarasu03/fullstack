@@ -1,0 +1,83 @@
+############ 
+####  app.py  ###########
+from flask import Flask, render_template, request, redirect, url_for
+import pymysql
+
+app = Flask(__name__)
+
+# Configure MySQL connection
+db = pymysql.connect(host='localhost', user='root', password='mysql', database='world')
+cursor = db.cursor()
+
+# Create a table if it doesn't exist
+create_table_query = '''
+CREATE TABLE IF NOT EXISTS users (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) NOT NULL,
+    age VARCHAR(15) NOT NULL,
+    password VARCHAR(100) NOT NULL,
+    mobile_number VARCHAR(15),
+    father_name VARCHAR(50)
+)
+'''
+cursor.execute(create_table_query)
+
+@app.route('/', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        age= request.form['age']
+        password = request.form['password']
+        mobile_number = request.form['mobile_number']
+        father_name = request.form['father_name']
+        
+
+        insert_query = f"INSERT INTO users (username, age, password, mobile_number, father_name) VALUES ('{username}','{age}', '{password}', '{mobile_number}', '{father_name}')"
+        cursor.execute(insert_query)
+        db.commit()
+        return redirect(url_for('login'))
+    return render_template('login.html')
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+print("connection to db mysql is conneted successfully")
+
+
+#############
+##### home.html  ####
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home</title>
+</head>
+<body>
+    <h2>Welcome, {{ username }}!</h2>
+    <a href="{{ url_for('logout') }}">Logout</a>
+</body>
+</html>
+ ###############
+## index.html #########
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Form</title>
+</head>
+<body>
+    <h2>Login</h2>
+    <form method="POST">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required><br><br>
+        <label for="age">AGE:</label>
+        <input type="number" id="age" name="age" required><br><br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required><br><br>
+        <label for="mobile_number">Mobile Number:</label>
+        <input type="text" id="mobile_number" name="mobile_number"><br><br>
+        <label for="father_name">Father's Name:</label>
+        <input type="text" id="father_name" name="father_name"><br><br>
+        <input type="submit" value="submit">
+    </form>
+</body>
+</html>
